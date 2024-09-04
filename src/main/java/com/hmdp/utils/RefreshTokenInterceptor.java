@@ -14,6 +14,9 @@ import java.util.concurrent.TimeUnit;
 import static com.hmdp.utils.RedisConstants.LOGIN_USER_KEY;
 import static com.hmdp.utils.RedisConstants.LOGIN_USER_TTL;
 
+/**
+ * 如果有token且未过期，需要刷新token时间
+ */
 public class RefreshTokenInterceptor implements HandlerInterceptor {
 
     private StringRedisTemplate stringRedisTemplate;
@@ -24,25 +27,26 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        // 1.获取请求头中的token
+        // 获取请求头中的token
         String token = request.getHeader("authorization");
+        // 没token，需要获取，放到下一层
         if (StrUtil.isBlank(token)) {
             return true;
         }
-        // 2.基于TOKEN获取redis中的用户
+        // 基于TOKEN获取redis中的用户
         String key  = LOGIN_USER_KEY + token;
         Map<Object, Object> userMap = stringRedisTemplate.opsForHash().entries(key);
-        // 3.判断用户是否存在
+        // 有token，却不存在对应用户，token过期，需要重新登录获取token，放行到下一层
         if (userMap.isEmpty()) {
             return true;
         }
-        // 5.将查询到的hash数据转为UserDTO
+        // 将查询到的hash数据转为UserDTO
         UserDTO userDTO = BeanUtil.fillBeanWithMap(userMap, new UserDTO(), false);
-        // 6.存在，保存用户信息到 ThreadLocal
+        // 用户存在，保存用户信息到 ThreadLocal  ？？？
         UserHolder.saveUser(userDTO);
-        // 7.刷新token有效期
+        // 刷新该token的有效期
         stringRedisTemplate.expire(key, LOGIN_USER_TTL, TimeUnit.MINUTES);
-        // 8.放行
+        // 放行
         return true;
     }
 

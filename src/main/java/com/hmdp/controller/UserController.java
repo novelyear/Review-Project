@@ -28,13 +28,14 @@ public class UserController {
      
     @PostMapping("code")
     public Result sendCode(@RequestParam("phone") String phone, HttpSession session) {
+        log.info("{} 请求发送验证码", phone);
         return userService.sendCode(phone, session);
     }
 
      
     @PostMapping("/login")
     public Result login(@RequestBody LoginFormDTO loginForm, HttpSession session){
-        // TODO 实现登录功能
+        log.info("{} -> {} 请求登录", loginForm.getPhone(), loginForm.getCode());
         return userService.login(loginForm, session);
     }
 

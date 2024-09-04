@@ -27,8 +27,8 @@ public class MvcConfig implements WebMvcConfigurer {
                         "/blog/hot",
                         "/user/code",
                         "/user/login"
-                ).order(1);
-        // token刷新的拦截器
+                ).order(1);//优先级1
+        // token刷新的拦截器，优先级0
         registry.addInterceptor(new RefreshTokenInterceptor(stringRedisTemplate)).addPathPatterns("/**").order(0);
     }
 }

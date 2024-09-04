@@ -4,19 +4,20 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-//拦截器需要实现HandlerIntercepter
+
+/**
+ * 拦截未登录，上层有3个true，前两个都需要被拦截定向去登录，最后一个不用，区别在于ThreadLocal里有没有user
+ */
 public class LoginInterceptor implements HandlerInterceptor {
+
     //true放行，false拦截
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        // 1.判断是否需要拦截（ThreadLocal中是否有用户）
-        if (UserHolder.getUser() == null) {
-            // 没有，需要拦截，设置状态码
-            response.setStatus(401);
-            // 拦截
+        //如果ThreadLocal里有user，则放行
+        if(UserHolder.getUser() == null) {
+            response.sendRedirect("/login");
             return false;
         }
-        // 有用户，则放行
         return true;
     }
 }
